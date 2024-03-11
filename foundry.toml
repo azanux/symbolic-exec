@@ -3,4 +3,11 @@ src = "src"
 out = "out"
 libs = ["lib"]
 
+repammaings = ["openzeppelin=lib/openzeppelin-contracts/contracts","halmos-cheatcodes=lib/halmos-cheatcodes/src"]
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
+[fuzz]
+runs = 10000
+include_storage = true
+seed = '0x02'
