@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
+/**
+ * @title Code
+ * @author azanux
+ * @notice this  program hold Ether and you have to guess the password to withdraw it
+ */
 contract Code {
     uint256 private password;
 

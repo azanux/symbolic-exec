@@ -17,7 +17,30 @@ contract CounterTest is Test {
         assertEq(counter.number(), 1);
     }
 
-    function testFuzz_SetNumber(uint256 x) public {
+    /**
+     *
+     * @param x This test function use fuzzing to break the contract
+     * with 1000000 iteration the fuzzer have trouble to find the value that break the contract
+     */
+    function test_Fuzz_SetNumber(uint256 x) public {
+        counter.setNumber(x);
+        assertEq(counter.number(), x);
+    }
+
+    /**
+     *
+     * @param x This test function use halmos to break the contract
+     */
+    function chek_Fuzz_SetNumber(uint256 x) public {
+        counter.setNumber(x);
+        assertEq(counter.number(), x);
+    }
+
+    /**
+     * This test function use a value tu brake the contract
+     */
+    function test_SetNumber() public {
+        uint256 x = 3456827547395746354;
         counter.setNumber(x);
         assertEq(counter.number(), x);
     }

@@ -3,6 +3,8 @@ src = "src"
 out = "out"
 libs = ["lib"]
 
+solc-version = "0.8.17"
+
 repammaings = ["openzeppelin=lib/openzeppelin-contracts/contracts","halmos-cheatcodes=lib/halmos-cheatcodes/src"]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

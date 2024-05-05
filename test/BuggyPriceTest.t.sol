@@ -14,11 +14,19 @@ contract BuggyPriceTest is Test {
         buggyPrice = new BuggyPrice();
     }
 
-    function (uint96 price, uint32 quantity) public view {
+    /**
+     * This is the fuzz function that will test several value to break the contract
+     * @param price price of the product
+     * @param quantity quantity of the product
+     */
+    function test_total_fuzz(uint96 price, uint32 quantity) public view {
         uint128 total = buggyPrice.totalPriceBuggy(price, quantity);
         assert(quantity == 0 || total >= price);
     }
 
+    /**
+     * This is the test function that we already know the value to break the contract
+     */
     function test_TotalPriceBuggy() public view {
         uint96 price = 43643669322988860674796334970;
         uint32 quantity = 1675100672;
@@ -28,12 +36,25 @@ contract BuggyPriceTest is Test {
         assert(quantity == 0 || total >= price);
     }
 
+    /**
+     * This is another test function that we already know the value to break the contract
+     */
     function test_TotalPriceBuggyOther() public view {
-        uint96 price = 39614081294025656978550816768;
+        uint96 price = 39614081294025656978550816767;
         uint32 quantity = 1073741824;
 
         uint128 total = buggyPrice.totalPriceBuggy(price, quantity);
 
+        assert(quantity == 0 || total >= price);
+    }
+
+    /**
+     * This is the function use by Halmos to break the code
+     * @param price price of the product
+     * @param quantity quantity of the product
+     */
+    function check_totalPrice_test(uint96 price, uint32 quantity) public view {
+        uint128 total = buggyPrice.totalPriceBuggy(price, quantity);
         assert(quantity == 0 || total >= price);
     }
 }

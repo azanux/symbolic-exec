@@ -14,7 +14,21 @@ contract CodeTest is Test {
         code = new Code{value: 5 ether}();
     }
 
+    /**
+     * This the fuzz function that will test several value to break the contract
+     * @param x value to withdraw
+     */
     function test_check_withdraw(uint256 x) public {
+        vm.prank(owner);
+        code.withdraw(x);
+        assert(code.balance() != 0 ether);
+    }
+
+    /**
+     * This the test function will use halmos to break the contract
+     * @param x value to withdraw
+     */
+    function check_withdraw(uint256 x) public {
         vm.prank(owner);
         code.withdraw(x);
         assert(code.balance() != 0 ether);
@@ -28,7 +42,7 @@ contract CodeTest is Test {
         assert(code.balance() != 0 ether);
     }
 
-    function test_withdraw_ko() public {
+    function test_fail_withdraw() public {
         uint256 amount = 25;
         vm.prank(owner);
         code.withdraw(amount);
