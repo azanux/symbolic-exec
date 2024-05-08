@@ -1,10 +1,11 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "forge-std/Test.sol";
-import "../src/BuggyPrice.sol";
+import {SymTest} from "halmos-cheatcodes/SymTest.sol";
+import {Test} from "forge-std/Test.sol";
+import {BuggyPrice} from "../src/BuggyPrice.sol";
 
-contract BuggyPriceTest is Test {
+contract BuggyPriceTest is SymTest, Test {
     BuggyPrice public buggyPrice;
 
     address public owner = address(0x123);

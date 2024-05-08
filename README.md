@@ -178,7 +178,7 @@ Encountered a total of 1 failing tests, 0 tests succeeded
 ## Halmos
 We will try to break the invariant using Halmos , and halmos manage to find the value that break the invariant
 ```shell
-halmos --function chek_Fuzz_SetNumber 
+halmos --function check_counter
 
 ---------------------------------------------------------------------------------
 Running 1 tests for test/Counter.t.sol:CounterTest
@@ -223,18 +223,220 @@ Counterexample:
 Symbolic test result: 0 passed; 1 failed; time: 0.07s
 ```
 
+# Token
+This Smart Contract is a token, it will allow you to transfer token to another address
+ * We will try to find some value that break the invariant of the contract
+ * A caller can't transfer anothe token
+ * But the _transfer function is public so the call will be able to transfer other user token
 
+ # Halmos
+ We will use Halmos to break the invariant stating that when the caller doesn't call transfer function
+ his balnce should not increase ans dthe balance of another user should not decrease
+ ```shell
+halmos --function checkBalanceUpdate --solver-timeout-assertion 0  
 
+Running 1 tests for test/TokenTest.t.sol:TokenTest
+Counterexample: 
+    halmos_amount_uint256_02 = 0x0000000000000000000000000000000000000000013a7e3c9fd0803ce8000000 (380198843856324804992827392)
+    halmos_amount_uint256_04 = 0x00000000000000000000000000000000000000000000c0000000000000000000 (906694364710971881029632)
+    halmos_amount_uint256_06 = 0x00000000000000000000000000000000000000000000004000000000000ebf86 (1180591620717412269958)
+    halmos_caller_address_07 = 0x0000000000000000000000400000000000000000
+    halmos_data_bytes_09 = 0x30e0789e00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000037fc900000307d7f7e (100 bytes)
+    halmos_others_address_08 = 0x0000000000000000000000000000000000000000
+    halmos_receiver_address_01 = 0x0000000000000000000000000080000000000000
+    halmos_receiver_address_03 = 0x0000000000000000000000400000000000000000
+    halmos_receiver_address_05 = 0x0000000000000000000000000000000000000000
+```
 
+## Test
+We will test using the method Halmos use to find the problem (TokenFuzzTest.t.sol)
 
-
-
-
-
-Run halmos to find conterExample
 ```shell
- halmos --function test_check_BalanceUpdate  --solver-timeout-assertion 0
+forge test --mt test_checkBalanceUpdate 
+
+Ran 1 test for test/TokenFuzzTest.t.sol:TokenTest
+[FAIL. Reason: panic: assertion failed (0x01)] test_checkBalanceUpdate() (gas: 42417)
+Suite result: FAILED. 0 passed; 1 failed; 0 skipped; finished in 849.71µs (48.08µs CPU time)
+
+Ran 1 test suite in 146.72ms (849.71µs CPU time): 0 tests passed, 1 failed, 0 skipped (1 total tests)
+
+Failing tests:
+Encountered 1 failing test in test/TokenFuzzTest.t.sol:TokenTest
+```
+
+
+# MyToken
+This contrat is an ERC20 Token , we will try to find some value that break the invariant of the contract
+Invariant is when a sender transfer token to a receiver the balance of the sender will decrease and the balance of the receiver will increase by amount
+
+## Fuzz
+We will use fuzing to find somne value that break invariant , we find that when sender and receiver = 0x0000000000000000000000000000000000000001 , we break the invariant
+```shell
+forge test --mt test_transfer
+[⠊] Compiling...
+[⠘] Compiling 1 files with 0.8.17
+[⠃] Solc 0.8.17 finished in 1.74s
+Compiler run successful!
+proptest: Saving this and future failures in cache/fuzz/failures
+proptest: If this test was run on a CI system, you may wish to add the following line to your copy of the file.
+cc 1c292f8a4439daadc1e7d3ff15330a97df1c1b7e5e3a6970e39a064d7e17e6af
+
+Ran 1 test for test/MyToken.t.sol:MyTokenFuzzTest
+[FAIL. Reason: panic: assertion failed (0x01); counterexample: calldata=0x4406296b000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001 args=[0x0000000000000000000000000000000000000001, 0x0000000000000000000000000000000000000001, 1]] test_transfer(address,address,uint256) (runs: 68, μ: 207335, ~: 208276)
+Suite result: FAILED. 0 passed; 1 failed; 0 skipped; finished in 101.98ms (100.77ms CPU time)
+
+Ran 1 test suite in 248.82ms (101.98ms CPU time): 0 tests passed, 1 failed, 0 skipped (1 total tests)
+
+Failing tests:
+Encountered 1 failing test in test/MyToken.t.sol:MyTokenFuzzTest
+[FAIL. Reason: panic: assertion failed (0x01); counterexample: calldata=0x4406296b000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001 args=[0x0000000000000000000000000000000000000001, 0x0000000000000000000000000000000000000001, 1]] test_transfer(address,address,uint256) (runs: 68, μ: 207335, ~: 208276)
+
+```
+
+# Halmos
+We use Halmos to break the invariant now, we notice that halmos find values that breack invariant too
+when address of sender = receiver  (0x00000000000000000000000000000000aaaa0001)
+
+
+```shell
+ halmos --function halmos --function check_MyToken_transfer
+
+ Running 1 tests for test/MyToken.t.sol:MyTokenTest
+Counterexample: 
+    halmos_initialSupply_uint256_01 = 0xc0000000a040010c8080900400800a3244808090295802400000000000002000 (86844066944863442992978657723153227526379234827954262748013478382107197710336)
+    p_amount_uint256 = 0x2cfbfebe5ffdfff95d5f6ff9fc7f73ad09213f6f9aafe90bf500202000000000 (20347002126994204323227851760517155306486346144054837729429966200417900560384)
+    p_receiver_address = 0x00000000000000000000000000000000aaaa0001
+    p_sender_address = 0x00000000000000000000000000000000aaaa0001
+[FAIL] check_MyToken_transfer(address,address,uint256) (paths: 8, time: 1.13s, bounds: [])
+Symbolic test result: 0 passed; 1 failed; time: 1.69s
+```
+
+# OpenZeppelinERC20
+The contract is an ERC20 based on Openzeppelin , we will use Halmos to break the invariant
+we have 2 invariants 
+ - // ensure that the caller cannot spend other' tokens without approvals
+ - // ensure that the call after nay call can't have more token after the call 
+ We add a bugg in the contract that automatically mint token for the caller, we will se if Halmos can find this bug
+
+ ## Halmos Allowance
+ In this part we will ensure that the caller cannot spend other' tokens without approvals,
+ Halmos didn't break the invariant 
+ ```shell
+  halmos --function check_NoBackdoor
+
+  Running 1 tests for test/OpenZeppelinERC20Test.t.sol:OpenZeppelinERC20Test
+Warning: multiple paths were found in setUp(); an arbitrary path has been selected for the following tests.
+[PASS] check_NoBackdoor(bytes4,address,address) (paths: 33, time: 6.81s, bounds: [])
+Symbolic test result: 1 passed; 0 failed; time: 16.58s
  ```
+  ## Halmos transfer
+ - // ensure that the call after nay call can't have more token after the call 
+ We add a bugg in the contract that automatically mint 1 ether token for the caller, we will see if Halmos can find this bug.
+ Halmos break the invariant by finding values that can break the invariant
+
+ ```shell
+ halmos --function check_transfer
+
+Running 2 tests for test/OpenZeppelinERC20Test.t.sol:OpenZeppelinERC20Test
+Warning: multiple paths were found in setUp(); an arbitrary path has been selected for the following tests.
+Counterexample: 
+    halmos_amount_uint256_03 = 0x0000000000000000000000000000000000000000000000000000000000000000 (0)
+    halmos_amount_uint256_05 = 0x0000000000000000000000000000000000000000000000000000000000000000 (0)
+    halmos_amount_uint256_06 = 0x0000000000000000000000000000000000000000000000000000000000000000 (0)
+    halmos_balance_uint256_01 = 0x000000000000000000000000000000000000000000000000000000010e700000 (4537188352)
+    halmos_balance_uint256_02 = 0x0000000000000000000000000000000000000000000000000000000050000000 (1342177280)
+    halmos_balance_uint256_04 = 0x0000000000000000000000000000000000000000000000000000000116000000 (4664066048)
+    p_amount_uint256 = 0x000000000000000000000000000000000000000000000000000000001ff7ffff (536346623)
+    p_other_address = 0x0000000000000000000000000000000000000000
+    p_receiver_address = 0x0000000000000000000000000000000000000001
+    p_sender_address = 0x0000000000000000000000000000000000001003
+Counterexample: 
+    halmos_amount_uint256_03 = 0x0000000000000000000000000000000000000000000000000000000000000000 (0)
+    halmos_amount_uint256_05 = 0x0000000000000000000000000000000000000000000000000000000000000000 (0)
+    halmos_amount_uint256_06 = 0x0000000000000000000000000000000000000000000000000000000000000000 (0)
+    halmos_balance_uint256_01 = 0x0000000000000000000000000000000000000000000000000000000076500000 (1984954368)
+    halmos_balance_uint256_02 = 0x0000000000000000000000000000000000000000000000000000000080000000 (2147483648)
+    halmos_balance_uint256_04 = 0x0000000000000000000000000000000000000000000000000000000080000000 (2147483648)
+    p_amount_uint256 = 0x0000000000000000000000000000000000000000000000000000000040000000 (1073741824)
+    p_other_address = 0x0000000000000000000000000000000000000000
+    p_receiver_address = 0x0000000000000000000000080000000000000000
+    p_sender_address = 0x0000000000000000000000080000000000000000
+[FAIL] check_transfer(address,address,address,uint256) (paths: 34, time: 3.51s, bounds: [])
+ ```
+
+# DEIStableCoin
+This contract is realated to DEUSDAO Hack , where Token holders lost a total of ~$6.5M on Arbitrum, BSC and Etherum, and the DEI stablecoin depegged over 80%.
+
+A simple implementation error was introduced into the DEI token contract, in an upgrade last month. The burnFrom function was misconfigured, with the ‘_allowances’ parameters ‘msgSender’ and ‘account’ written into the contract in the wrong order.
+The mis-ordered parameters allow the attacker to set a large token approval for any DEI holder’s address. Then, by burning 0 tokens from the address, the approval is updated to the attacker’s address, who can drain the holder’s funds.
+This is the attack , when we see that the function burnFrom give allowance to the caller
+1 -identify an address with a huge amount of DEI
+2 - approve to this address
+3 - call burnFrom with amount = 0 and this address
+4 - During the burnFrom it grants approves all tokens from the address to your own
+5 - call transferFrom
+
+```shell
+halmos --function check_DEI_NoBackdoor 
+
+Running 1 tests for test/DEIStablecoinTest.t.sol:DEIStablecoinTest
+Counterexample: 
+    halmos_?_bool_02 = true
+    halmos_?_bool_05 = true
+    halmos_?_bool_08 = true
+    halmos_?_bool_11 = true
+    halmos_?_bool_14 = true
+    halmos_?_bool_17 = true
+    halmos_amount_uint256_07 = 0x0000000000000000000000000000000000000000000000000000000000000000 (0)
+    halmos_amount_uint256_13 = 0x0000000000000000000000000000000000000000000800000000000000000000 (9671406556917033397649408)
+    halmos_amount_uint256_16 = 0x0000000000000000000000000000000000000000000000000000000000000000 (0)
+    halmos_balance_uint256_01 = 0x0000000000000000000000000000000000000000000000000000000010000000 (268435456)
+    halmos_balance_uint256_04 = 0x0000000000000000000000000000000000000000005fc0000040000000000000 (115754647246115141987598336)
+    halmos_balance_uint256_10 = 0x000000000000000000000000000000000000000000fbbfffffc0000000000000 (304347075069968496222797824)
+    halmos_data_bytes_19 = 0x0000000000000000000000000000000000000000000000000000000000001001000000000000000000000000000000000000000000000000000000000ffffffe000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 (1024 bytes)
+    p_caller_address = 0x0000000000000000000000000000000000001003
+    p_other_address = 0x0000000000000000000000000000000000001001
+    p_selector_bytes4 = 0x79cc679000000000000000000000000000000000000000000000000000000000
+[FAIL] check_DEI_NoBackdoor(bytes4,address,address) (paths: 51, time: 45.65s, bounds: [])
+Symbolic test result: 0 passed; 1 failed; time: 50.74s
+```
+
+We see that a call to brunFrom breack the invariant
+```shell
+cast 4byte 0x79cc6790
+
+burnFrom(address,uint256)
+```
+
+# OpenZeppelinERC721
+Ce contract est semblable a celui de ERc20 mais concerne ERC721 
+Il vise a s'assurer que tous les invariants sont respectés. a savoir :
+
+
+Check if we don't have allowance
+```shell
+halmos --function check_ERC721NoBackdoor
+
+
+Running 1 tests for test/OpenZeppelinERC721Test.t.sol:OpenZeppelinERC721Test
+[PASS] check_ERC721NoBackdoor(bytes4) (paths: 50, time: 11.58s, bounds: [])
+WARNING:Halmos:check_ERC721NoBackdoor(bytes4): unknown calls have been assumed to be static: 0x150b7a02
+(see https://github.com/a16z/halmos/wiki/warnings#uninterpreted-unknown-calls)
+Symbolic test result: 1 passed; 0 failed; time: 13.06s
+```
+
+Check if the caller don't have more 
+```shell
+halmos --function check_ERC721_transferFrom
+
+Running 1 tests for test/OpenZeppelinERC721Test.t.sol:OpenZeppelinERC721Test
+[PASS] check_ERC721_transferFrom(address,address,address,address,uint256,uint256) (paths: 105, time: 28.21s, bounds: [])
+WARNING:Halmos:check_ERC721_transferFrom(address,address,address,address,uint256,uint256): unknown calls have been assumed to be static: 0x150b7a02
+(see https://github.com/a16z/halmos/wiki/warnings#uninterpreted-unknown-calls)
+Symbolic test result: 1 passed; 0 failed; time: 29.77s
+
+```
+
 
 ## Ityfuzz
 
@@ -244,6 +446,4 @@ Run ityfuzz
 ityfuzz evm -m test/CodeTest.sol:CodeTest -- forge test --mt test_check_withdraw
 
 ityfuzz evm -m test/BuggyPriceTest.t.sol:BuggyPriceTest -- forge test --mt test_check_TotalPriceBuggy
-````
-
-
+```

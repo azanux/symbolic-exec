@@ -31,9 +31,10 @@ contract CounterTest is Test {
      *
      * @param x This test function use halmos to break the contract
      */
-    function chek_Fuzz_SetNumber(uint256 x) public {
+    function check_counter(uint256 x) public {
         counter.setNumber(x);
-        assertEq(counter.number(), x);
+        uint256 res = counter.number();
+        assert(res == x);
     }
 
     /**

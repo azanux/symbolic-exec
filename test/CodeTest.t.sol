@@ -1,10 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import {SymTest} from "halmos-cheatcodes/SymTest.sol";
+
 import "forge-std/Test.sol";
 import "../src/Code.sol";
 
-contract CodeTest is Test {
+contract CodeTest is SymTest, Test {
     Code public code;
 
     address public owner = address(0x123);
@@ -29,6 +31,16 @@ contract CodeTest is Test {
      * @param x value to withdraw
      */
     function check_withdraw(uint256 x) public {
+        vm.prank(owner);
+        code.withdraw(x);
+        assert(code.balance() != 0 ether);
+    }
+
+    /**
+     * This the test function will use halmos symbolic to break the contract
+     */
+    function check_symb_withdraw() public {
+        uint256 x = svm.createUint256("x");
         vm.prank(owner);
         code.withdraw(x);
         assert(code.balance() != 0 ether);

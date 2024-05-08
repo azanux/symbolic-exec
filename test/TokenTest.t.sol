@@ -5,38 +5,21 @@ import {Test} from "forge-std/Test.sol";
 
 import {Token} from "../src/Token.sol";
 
-contract TokenTest is Test {
-
+contract TokenTest is SymTest, Test {
     Token token;
 
     function setUp() public {
         token = new Token();
 
         // set the balances of three arbitrary accounts to arbitrary symbolic values
-        /** 
         for (uint256 i = 0; i < 3; i++) {
             address receiver = svm.createAddress("receiver"); // create a new symbolic address
             uint256 amount = svm.createUint256("amount"); // create a new symbolic uint256 value
             token.transfer(receiver, amount);
         }
-        */
     }
 
-    function test_balance() public {
-
-        address alice = makeAddr("alice"); // create a symbolic address
-        address bob = makeAddr("bob"); // create another symbolic address
-
-        token.transfer(alice, 50);
-
-        vm.prank(alice);
-        token.transfer(alice, 10);
-
-        assert(token.balanceOf(alice) <= 50); // ensure that the balance of alice is at least 5
-    }
-
-/** 
-    function check_BalanceUpdate() public {
+    function checkBalanceUpdate() public {
         // consider two arbitrary distinct accounts
         address caller = svm.createAddress("caller"); // create a symbolic address
         address others = svm.createAddress("others"); // create another symbolic address
@@ -56,6 +39,4 @@ contract TokenTest is Test {
         assert(token.balanceOf(caller) <= oldBalanceCaller); // cannot increase their own balance
         assert(token.balanceOf(others) >= oldBalanceOthers); // cannot decrease others' balance
     }
-
-    */
 }
